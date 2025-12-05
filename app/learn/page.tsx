@@ -48,7 +48,6 @@ const LearnPage = () => {
 
     const interval = setInterval(() => {
       playerRef.current.getCurrentTime().then((time: number) => {
-        console.log(time)
         const s = subtitles.find((sub) => {
           const start = parseFloat(sub.start);
           const end = start + parseFloat(sub.dur);
