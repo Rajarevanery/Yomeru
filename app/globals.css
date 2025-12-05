@@ -3,6 +3,7 @@
 @theme inline {
   --font-poppins: var(--font-poppins-variable);
   --font-comfortaa: var(--font-comfortaa-variable);
+  --font-mplusrounded: var(--font-mplusrounded-variable);
 
   --color-primary: #0e121b;
   --color-secondary: #131720;
@@ -23,7 +24,6 @@
 }
 
 body {
-  font-family: var(--font-poppins), sans-serif;
   background: var(--color-background);
   color: var(--color-foreground);
 }

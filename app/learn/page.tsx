@@ -11,22 +11,56 @@ import YouTubePlayer from "youtube-player";
 
 const LearnPage = () => {
   const [videoUrl, setVideoUrl] = useState<string>("");
+  const [subtitles, setSubtitles] = useState<any[]>([]);
+  const [currentSubtitle, setCurrentSubtitle] = useState<string>("");
+
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
 
-  const handleLoadUrl = () => {
+  const handleLoadUrl = async () => {
     const videoID = extractYoutubeId(videoUrl);
+
     if (playerRef.current) playerRef.current.destroy();
     if (playerContainerRef.current) {
       playerRef.current = YouTubePlayer(playerContainerRef.current, {
         videoId: videoID || "",
         width: "100%",
-        height: "576",
-        playerVars: { autoplay: 0, controls: 1 },
+        height: "100%",
+        playerVars: {
+          autoplay: 0,
+          controls: 1,
+          modestbranding: 1,
+          rel: 0,
+          iv_load_policy: 3,
+          fs: 0,
+          cc_load_policy: 1,
+        },
       });
-      playerRef.current.on("ready", () => {});
     }
+
+    const res = await fetch(`/api/subtitles?id=${videoID}`);
+    const data = await res.json();
+    setSubtitles(data.subtitles || []);
   };
+
+  useEffect(() => {
+    if (!subtitles.length || !playerRef.current) return;
+
+    const interval = setInterval(() => {
+      playerRef.current.getCurrentTime().then((time: number) => {
+        console.log(time)
+        const s = subtitles.find((sub) => {
+          const start = parseFloat(sub.start);
+          const end = start + parseFloat(sub.dur);
+          return time >= start && time <= end;
+        });
+
+        setCurrentSubtitle(s ? s.text : "");
+      });
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [subtitles]);
 
   return (
     <div className="max-w-5xl mx-auto py-6">
@@ -61,7 +95,19 @@ const LearnPage = () => {
       />
 
       {/* Subtitle */}
-      <div className="flex flex-1 h-40 bg-subtitle my-6 rounded-xl"></div>
+      <div className="flex flex-1 h-40 bg-subtitle my-6 rounded-xl p-6 justify-center font-mplusrounded items-center">
+        {currentSubtitle ? (
+          <p
+            className="text-4xl"
+            onMouseEnter={() => playerRef.current.pauseVideo()}
+            onMouseLeave={() => playerRef.current.playVideo()}
+          >
+            {currentSubtitle}
+          </p>
+        ) : (
+          <p className="opacity-50 text-4xl font-poppins">...</p>
+        )}
+      </div>
 
       {/* How To Use */}
       <div className="flex flex-1 bg-secondary my-6 rounded-xl p-6 border border-white/10">

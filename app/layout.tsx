@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Comfortaa, Poppins } from "next/font/google";
+import { Comfortaa, Poppins, M_PLUS_Rounded_1c } from "next/font/google";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -14,6 +14,12 @@ const comfortaa = Comfortaa({
   variable: "--font-comfortaa-variable",
 });
 
+const mplusrounded = M_PLUS_Rounded_1c({
+  subsets: ["latin"],
+  weight: ["100", "300", "400", "500", "700"],
+  variable: "--font-mplusrounded-variable",
+});
+
 export const metadata: Metadata = {
   title: "言葉Kotoba",
   description: "Learn japanese faster by doing and learning.",
@@ -26,7 +32,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${comfortaa.variable} ${poppins.variable} antialiased`}>
+      <body
+        className={`${comfortaa.variable} ${poppins.variable} ${mplusrounded.variable} antialiased`}
+      >
         {children}
       </body>
     </html>
