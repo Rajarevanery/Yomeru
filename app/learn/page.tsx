@@ -1,9 +1,25 @@
-import React from "react";
+// Hello to whoever looking at this code right now ;')
+// ZoneeoX was here ;D
+"use client";
+import { useState } from "react";
 import { BsYoutube } from "react-icons/bs";
+import { CiWarning } from "react-icons/ci";
 import { HiOutlineCursorClick } from "react-icons/hi";
 import { TbPlayerPlay } from "react-icons/tb";
+import { extractYoutubeId } from "./_lib/helper";
 
 const LearnPage = () => {
+  const [videoUrl, setVideoUrl] = useState<string>("");
+  const [iframeUrl, setiframeUrl] = useState<string>("");
+
+  const handleLoadUrl = () => {
+    // ! OLD WAY const extractID = videoUrl.split("=").slice(1);
+    const extractID = extractYoutubeId(videoUrl);
+    setiframeUrl(`https://www.youtube.com/embed/${extractID}`);
+  };
+
+  console.log(iframeUrl);
+
   return (
     <div className="max-w-5xl mx-auto py-6">
       {/* URL Input */}
@@ -14,11 +30,15 @@ const LearnPage = () => {
           </i>
           <input
             type="text"
-            placeholder="Place Youtube URL Here..."
+            onChange={(e) => setVideoUrl(e.target.value)}
+            placeholder="Place Youtube URL or ID Here..."
             className="font-comfortaa w-full border-none text-sm outline-none"
           />
         </div>
-        <button className="bg-red-500 p-4 rounded-lg flex flex-row gap-4 items-center cursor-pointer">
+        <button
+          onClick={handleLoadUrl}
+          className="bg-red-500 p-4 rounded-lg flex flex-row gap-4 items-center cursor-pointer"
+        >
           <i>
             <TbPlayerPlay size={20} />
           </i>
@@ -30,7 +50,7 @@ const LearnPage = () => {
       <div className="w-full aspect-video bg-black mt-6 rounded-xl overflow-hidden">
         <iframe
           className="w-full h-full"
-          src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+          src={`${iframeUrl || "https://www.youtube.com/embed/L4VlDU-zIRk"}`}
           title="YouTube video player"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
@@ -47,8 +67,8 @@ const LearnPage = () => {
             <HiOutlineCursorClick size={25} className="opacity-50" />
           </i>
           <div className="flex flex-col">
-            <h2 className="text-lg font-semibold">How to use</h2>
-            <p className="text-sm text-text-secondary">
+            <h2 className="text-lg font-semibold font-poppins">How to use</h2>
+            <p className="text-sm text-text-secondary font-poppins">
               Play the video and hover over any Japanese word in the subtitles
               below to see its English definition. The app uses the Jisho
               dictionary to provide accurate meanings.
@@ -56,6 +76,28 @@ const LearnPage = () => {
           </div>
         </div>
       </div>
+      <div className="flex flex-1 bg-red-600/20 my-6 rounded-xl p-6 border border-white/10">
+        <div className="flex flex-row gap-4">
+          <i className="bg-red-700/50 p-3 h-fit rounded-xl">
+            <CiWarning size={25} className="opacity-50" />
+          </i>
+          <div className="flex flex-col">
+            <h2 className="text-lg font-semibold font-poppins">
+              IN DEVELOPMENT
+            </h2>
+            <p className="text-sm text-text-secondary font-poppins">
+              Any mistranslations or incorrect definitions may occur because the
+              app is still in active development. Some words or phrases might
+              not be recognized, and certain subtitles may not parse correctly.
+              Thanks for your patience as the features continue to improve.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <p className="mx-auto opacity-50 text-sm w-fit font-comfortaa">
+        App developed by ZoneeoX
+      </p>
     </div>
   );
 };
