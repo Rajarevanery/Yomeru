@@ -1,27 +1,31 @@
 // Hello to whoever looking at this code right now ;')
 // ZoneeoX was here ;D
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BsYoutube } from "react-icons/bs";
 import { CiWarning } from "react-icons/ci";
 import { HiOutlineCursorClick } from "react-icons/hi";
 import { TbPlayerPlay } from "react-icons/tb";
 import { extractYoutubeId } from "./_lib/helper";
+import YouTubePlayer from "youtube-player";
 
 const LearnPage = () => {
   const [videoUrl, setVideoUrl] = useState<string>("");
-  const [iframeUrl, setiframeUrl] = useState<string>("");
-  const [subtitles, setSubtitles] = useState<string>("");
+  const playerRef = useRef<any>(null);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
 
-  const handleLoadUrl = async () => {
-    const extractID = extractYoutubeId(videoUrl);
-    setiframeUrl(`https://www.youtube.com/embed/${extractID}`);
-
-    const res = await fetch(`/api/subtitles?id=${extractID}`);
-    const data = await res.json();
-    console.log("sub gaming:", data.subtitles);
-
-    
+  const handleLoadUrl = () => {
+    const videoID = extractYoutubeId(videoUrl);
+    if (playerRef.current) playerRef.current.destroy();
+    if (playerContainerRef.current) {
+      playerRef.current = YouTubePlayer(playerContainerRef.current, {
+        videoId: videoID || "",
+        width: "100%",
+        height: "576",
+        playerVars: { autoplay: 0, controls: 1 },
+      });
+      playerRef.current.on("ready", () => {});
+    }
   };
 
   return (
@@ -51,15 +55,10 @@ const LearnPage = () => {
       </div>
 
       {/* YOUTUBE VIDEO */}
-      <div className="w-full aspect-video bg-black mt-6 rounded-xl overflow-hidden">
-        <iframe
-          className="w-full h-full"
-          src={`${iframeUrl || "https://www.youtube.com/embed/L4VlDU-zIRk"}`}
-          title="YouTube video player"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
-      </div>
+      <div
+        ref={playerContainerRef}
+        className="w-full aspect-video bg-black mt-6 rounded-xl overflow-hidden"
+      />
 
       {/* Subtitle */}
       <div className="flex flex-1 h-40 bg-subtitle my-6 rounded-xl"></div>
