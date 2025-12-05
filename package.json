@@ -17,6 +17,7 @@
     "subtitle": "^4.2.2",
     "unofficial-jisho-api": "^2.3.4",
     "wanakana": "^5.3.1",
+    "youtube-caption-extractor": "^1.9.1",
     "youtube-player": "^5.6.0"
   },
   "devDependencies": {

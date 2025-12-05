@@ -11,14 +11,18 @@ import { extractYoutubeId } from "./_lib/helper";
 const LearnPage = () => {
   const [videoUrl, setVideoUrl] = useState<string>("");
   const [iframeUrl, setiframeUrl] = useState<string>("");
+  const [subtitles, setSubtitles] = useState<string>("");
 
-  const handleLoadUrl = () => {
-    // ! OLD WAY const extractID = videoUrl.split("=").slice(1);
+  const handleLoadUrl = async () => {
     const extractID = extractYoutubeId(videoUrl);
     setiframeUrl(`https://www.youtube.com/embed/${extractID}`);
-  };
 
-  console.log(iframeUrl);
+    const res = await fetch(`/api/subtitles?id=${extractID}`);
+    const data = await res.json();
+    console.log("sub gaming:", data.subtitles);
+
+    
+  };
 
   return (
     <div className="max-w-5xl mx-auto py-6">
