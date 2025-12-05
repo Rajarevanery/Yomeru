@@ -6,7 +6,11 @@ import { BsYoutube } from "react-icons/bs";
 import { CiWarning } from "react-icons/ci";
 import { HiOutlineCursorClick } from "react-icons/hi";
 import { TbPlayerPlay } from "react-icons/tb";
-import { extractYoutubeId, getTokenizer, tokenizeDetailed } from "./_lib/helper";
+import {
+  extractYoutubeId,
+  getTokenizer,
+  tokenizeDetailed,
+} from "./_lib/helper";
 import YouTubePlayer from "youtube-player";
 import { CgSpinner } from "react-icons/cg";
 
@@ -23,7 +27,6 @@ const LearnPage = () => {
   useEffect(() => {
     getTokenizer();
   }, []);
-
 
   const handleLoadUrl = async () => {
     const videoID = extractYoutubeId(videoUrl);
@@ -92,7 +95,18 @@ const LearnPage = () => {
     };
   }, [subtitles]);
 
-  console.log(subtitles)
+  const handleDefinitions = async (word: string) => {
+    try {
+      const response = await fetch(
+        `/api/jisho?word=${encodeURIComponent(word)}`
+      );
+      const data = await response.json();
+      console.log(data);
+      return data;
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div className="max-w-5xl mx-auto py-6">
@@ -136,9 +150,12 @@ const LearnPage = () => {
             onMouseLeave={() => playerRef.current.playVideo()}
           >
             {currentSubtitle.tokens.map((t: any, i: number) => (
-              <span key={i} className="cursor-pointer hover:text-sky-400">
+              <span
+                onClick={() => handleDefinitions(t.surface)}
+                key={i}
+                className="cursor-pointer hover:text-sky-400"
+              >
                 {t.surface}
-                
               </span>
             ))}
           </div>
