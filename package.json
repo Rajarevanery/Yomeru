@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@types/kuromoji": "^0.1.3",
+    "cheerio": "^1.0.0-rc.12",
     "kuromoji": "^0.1.2",
     "next": "16.0.6",
     "react": "19.2.0",

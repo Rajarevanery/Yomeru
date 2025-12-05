@@ -6,21 +6,41 @@ import { BsYoutube } from "react-icons/bs";
 import { CiWarning } from "react-icons/ci";
 import { HiOutlineCursorClick } from "react-icons/hi";
 import { TbPlayerPlay } from "react-icons/tb";
-import { extractYoutubeId } from "./_lib/helper";
+import { extractYoutubeId, getTokenizer, tokenizeDetailed } from "./_lib/helper";
 import YouTubePlayer from "youtube-player";
+import { CgSpinner } from "react-icons/cg";
 
 const LearnPage = () => {
   const [videoUrl, setVideoUrl] = useState<string>("");
   const [subtitles, setSubtitles] = useState<any[]>([]);
-  const [currentSubtitle, setCurrentSubtitle] = useState<string>("");
+  const [currentSubtitle, setCurrentSubtitle] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    getTokenizer();
+  }, []);
+
 
   const handleLoadUrl = async () => {
     const videoID = extractYoutubeId(videoUrl);
+    setIsLoading(true);
+    setCurrentSubtitle(null);
+    setSubtitles([]);
 
-    if (playerRef.current) playerRef.current.destroy();
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    if (playerRef.current) {
+      playerRef.current.destroy();
+      playerRef.current = null;
+    }
+
     if (playerContainerRef.current) {
       playerRef.current = YouTubePlayer(playerContainerRef.current, {
         videoId: videoID || "",
@@ -33,37 +53,49 @@ const LearnPage = () => {
           rel: 0,
           iv_load_policy: 3,
           fs: 0,
-          cc_load_policy: 1,
+          cc_load_policy: 0,
         },
       });
     }
 
     const res = await fetch(`/api/subtitles?id=${videoID}`);
     const data = await res.json();
-    setSubtitles(data.subtitles || []);
+    const rawSubs = data.subtitles || [];
+
+    const processed = await Promise.all(
+      rawSubs.map(async (sub) => {
+        const tokens = await tokenizeDetailed(sub.text);
+        return { ...sub, tokens };
+      })
+    );
+
+    setSubtitles(processed);
+    setIsLoading(false);
   };
 
   useEffect(() => {
     if (!subtitles.length || !playerRef.current) return;
 
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       playerRef.current.getCurrentTime().then((time: number) => {
-        const s = subtitles.find((sub) => {
+        const found = subtitles.find((sub) => {
           const start = parseFloat(sub.start);
           const end = start + parseFloat(sub.dur);
           return time >= start && time <= end;
         });
-
-        setCurrentSubtitle(s ? s.text : "");
+        setCurrentSubtitle(found || null);
       });
     }, 200);
 
-    return () => clearInterval(interval);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, [subtitles]);
+
+  console.log(subtitles)
 
   return (
     <div className="max-w-5xl mx-auto py-6">
-      {/* URL Input */}
       <div className="flex flex-row gap-4">
         <div className="flex flex-row border-white/20 bg-input items-center border p-3 rounded-lg gap-4 flex-1">
           <i className="text-neutral-500">
@@ -87,28 +119,34 @@ const LearnPage = () => {
         </button>
       </div>
 
-      {/* YOUTUBE VIDEO */}
       <div
         ref={playerContainerRef}
         className="w-full aspect-video bg-black mt-6 rounded-xl overflow-hidden"
       />
 
-      {/* Subtitle */}
       <div className="flex flex-1 h-40 bg-subtitle my-6 rounded-xl p-6 justify-center font-mplusrounded items-center">
-        {currentSubtitle ? (
-          <p
-            className="text-4xl"
+        {isLoading ? (
+          <i className="opacity-50 animate-spin font-poppins">
+            <CgSpinner size={50} />
+          </i>
+        ) : currentSubtitle ? (
+          <div
+            className="text-4xl flex flex-wrap gap-2"
             onMouseEnter={() => playerRef.current.pauseVideo()}
             onMouseLeave={() => playerRef.current.playVideo()}
           >
-            {currentSubtitle}
-          </p>
+            {currentSubtitle.tokens.map((t: any, i: number) => (
+              <span key={i} className="cursor-pointer hover:text-sky-400">
+                {t.surface}
+                
+              </span>
+            ))}
+          </div>
         ) : (
           <p className="opacity-50 text-4xl font-poppins">...</p>
         )}
       </div>
 
-      {/* How To Use */}
       <div className="flex flex-1 bg-secondary my-6 rounded-xl p-6 border border-white/10">
         <div className="flex flex-row gap-4">
           <i className="bg-slate-700/50 p-3 h-fit rounded-xl">
@@ -124,6 +162,7 @@ const LearnPage = () => {
           </div>
         </div>
       </div>
+
       <div className="flex flex-1 bg-red-600/20 my-6 rounded-xl p-6 border border-white/10">
         <div className="flex flex-row gap-4">
           <i className="bg-red-700/50 p-3 h-fit rounded-xl">
