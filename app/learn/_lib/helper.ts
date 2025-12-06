@@ -1,8 +1,6 @@
-import kuromoji from "kuromoji";
-import JishoAPI from "unofficial-jisho-api";
+import kuromoji, { Tokenizer, IpadicFeatures } from "kuromoji";
 import { toHiragana, toRomaji } from "wanakana";
-
-const jisho = new JishoAPI();
+import { WordToken } from "./type";
 
 export function isValidUrl(str: string) {
   try {
@@ -25,9 +23,9 @@ export function extractYoutubeId(url: string) {
   }
 }
 
-let tokenizer: any = null;
+let tokenizer: Tokenizer<IpadicFeatures> | null = null;
 
-export function getTokenizer(): Promise<any> {
+export function getTokenizer(): Promise<Tokenizer<IpadicFeatures>> {
   return new Promise((resolve, reject) => {
     if (tokenizer) return resolve(tokenizer);
 
@@ -52,9 +50,7 @@ export async function tokenize(japanese_text: string) {
 export async function tokenizeDetailed(japanese_text: string) {
   const tokens = await tokenize(japanese_text);
 
-  
-
-  return tokens.map((t) => ({
+  return tokens.map((t: WordToken) => ({
     surface: t.surface_form,
     base: t.basic_form,
     reading_kata: t.reading || "",

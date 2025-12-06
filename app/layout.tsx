@@ -6,18 +6,21 @@ const poppins = Poppins({
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
   variable: "--font-poppins-variable",
+  display: "swap",
 });
 
 const comfortaa = Comfortaa({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
   variable: "--font-comfortaa-variable",
+  display: "swap",
 });
 
 const mplusrounded = M_PLUS_Rounded_1c({
   subsets: ["latin"],
   weight: ["100", "300", "400", "500", "700"],
   variable: "--font-mplusrounded-variable",
+  display: "swap",
 });
 
 export const metadata: Metadata = {

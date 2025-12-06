@@ -13,24 +13,20 @@ import {
 } from "./_lib/helper";
 import YouTubePlayer from "youtube-player";
 import { CgSpinner } from "react-icons/cg";
+import Subtitle from "./_component/Subtitle";
+import { ICurrentSubtitle, ISubtitle, Token } from "./_lib/type";
+import { YouTubePlayer as YoutubePlayerTypes } from "youtube-player/dist/types";
 
 const LearnPage = () => {
   const [videoUrl, setVideoUrl] = useState<string>("");
-  const [subtitles, setSubtitles] = useState<any[]>([]);
-  const [currentSubtitle, setCurrentSubtitle] = useState<any | null>(null);
+  const [subtitles, setSubtitles] = useState<ISubtitle[]>([]);
+  const [currentSubtitle, setCurrentSubtitle] =
+    useState<ICurrentSubtitle | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const playerRef = useRef<any>(null);
+  const playerRef = useRef<YoutubePlayerTypes | null>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const posColors: Record<string, string> = {
-    名詞: "text-emerald-400", // noun
-    動詞: "text-blue-400", // verb
-    形容詞: "text-yellow-400", // adjective
-    助詞: "text-pink-400", // partcile
-    副詞: "text-purple-400", // adverb
-  };
 
   useEffect(() => {
     getTokenizer();
@@ -64,7 +60,6 @@ const LearnPage = () => {
           rel: 0,
           iv_load_policy: 3,
           fs: 0,
-          cc_load_policy: 0,
         },
       });
     }
@@ -74,10 +69,8 @@ const LearnPage = () => {
     const rawSubs = data.subtitles || [];
 
     const processed = await Promise.all(
-      rawSubs.map(async (sub) => {
+      rawSubs.map(async (sub: ISubtitle) => {
         const tokens = await tokenizeDetailed(sub.text);
-        console.log(sub);
-
         return { ...sub, tokens };
       })
     );
@@ -90,7 +83,7 @@ const LearnPage = () => {
     if (!subtitles.length || !playerRef.current) return;
 
     intervalRef.current = setInterval(() => {
-      playerRef.current.getCurrentTime().then((time: number) => {
+      playerRef.current?.getCurrentTime().then((time: number) => {
         const found = subtitles.find((sub) => {
           const start = parseFloat(sub.start);
           const end = start + parseFloat(sub.dur);
@@ -104,19 +97,6 @@ const LearnPage = () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [subtitles]);
-
-  const handleDefinitions = async (word: string) => {
-    try {
-      const response = await fetch(
-        `/api/jisho?word=${encodeURIComponent(word)}`
-      );
-      const data = await response.json();
-      console.log(data);
-      return data;
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   return (
     <div className="max-w-5xl mx-auto py-6">
@@ -148,7 +128,7 @@ const LearnPage = () => {
         className="w-full aspect-video bg-black mt-6 rounded-xl overflow-hidden"
       />
 
-      <div className="flex flex-1 h-40 bg-subtitle my-6 rounded-xl p-6 justify-center font-mplusrounded items-center">
+      <div className="flex flex-1 h-40 bg-subtitle my-6 rounded-xl p-6 justify-center font-mplusrounded items-center border border-white/20">
         {isLoading ? (
           <i className="opacity-50 animate-spin font-poppins">
             <CgSpinner size={50} />
@@ -156,33 +136,11 @@ const LearnPage = () => {
         ) : currentSubtitle ? (
           <div
             className="flex flex-wrap gap-2"
-            onMouseEnter={() => playerRef.current.pauseVideo()}
-            onMouseLeave={() => playerRef.current.playVideo()}
+            onMouseEnter={() => playerRef.current?.pauseVideo()}
+            onMouseLeave={() => playerRef.current?.playVideo()}
           >
-            {currentSubtitle.tokens.map((t: any, i: number) => {
-              const color = posColors[t.pos] || "text-neutral-300";
-
-              return (
-                <div
-                  key={i}
-                  className="flex flex-col gap-1 items-start justify-end"
-                >
-                  {t.reading_hira !== t.surface ? (
-                    <span className="text-sm opacity-50">{t.reading_hira}</span>
-                  ) : (
-                    <span className="text-sm opacity-0"></span>
-                  )}
-
-                  <span
-                    onClick={() => handleDefinitions(t.surface)}
-                    className={`cursor-pointer hover:text-sky-400 text-2xl ${color}`}
-                  >
-                    {t.surface}
-                  </span>
-
-                  {/* <span className="text-xs opacity-60">{t.pos}</span> */}
-                </div>
-              );
+            {currentSubtitle?.tokens?.map((t: Token, i: number) => {
+              return <Subtitle t={t} key={i} />;
             })}
           </div>
         ) : (
