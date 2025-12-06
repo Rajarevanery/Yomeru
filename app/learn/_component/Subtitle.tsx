@@ -1,6 +1,13 @@
+"use client";
+import { useState } from "react";
 import { Token } from "../_lib/type";
+import Popup from "./Popup";
 
 const Subtitle = ({ t }: { t: Token }) => {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [translation, setTranslation] = useState();
+
   const posColors: Record<string, string> = {
     名詞: "text-emerald-400", // noun
     動詞: "text-blue-400", // verb
@@ -10,12 +17,15 @@ const Subtitle = ({ t }: { t: Token }) => {
   };
 
   const handleDefinitions = async (word: string) => {
+    setIsOpen(true);
+    setIsLoading(true);
     try {
       const response = await fetch(
         `/api/jisho?word=${encodeURIComponent(word)}`
       );
       const data = await response.json();
-      console.log(data);
+      setIsLoading(false);
+      setTranslation(data);
       return data;
     } catch (error) {
       console.log(error);
@@ -25,7 +35,9 @@ const Subtitle = ({ t }: { t: Token }) => {
   const color = posColors[t.pos] || "text-neutral-300";
 
   return (
-    <div className="flex flex-col gap-1 items-start justify-end">
+    <div onMouseLeave={() => setIsOpen(false)} className="flex flex-col gap-1 items-start justify-end">
+      {isOpen && <Popup t={t} translation={translation} isLoading={isLoading} />}
+
       {t.reading_hira !== t.surface ? (
         <span className="text-sm opacity-50">{t.reading_hira}</span>
       ) : (
