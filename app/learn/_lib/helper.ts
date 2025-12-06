@@ -52,6 +52,8 @@ export async function tokenize(japanese_text: string) {
 export async function tokenizeDetailed(japanese_text: string) {
   const tokens = await tokenize(japanese_text);
 
+  
+
   return tokens.map((t) => ({
     surface: t.surface_form,
     base: t.basic_form,
