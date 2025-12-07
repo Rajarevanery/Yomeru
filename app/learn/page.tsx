@@ -16,6 +16,29 @@ import { CgSpinner } from "react-icons/cg";
 import Subtitle from "./_component/Subtitle";
 import { ICurrentSubtitle, ISubtitle, Token } from "./_lib/type";
 import { YouTubePlayer as YoutubePlayerTypes } from "youtube-player/dist/types";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+
+const particleList = [
+  "は",
+  "が",
+  "を",
+  "に",
+  "へ",
+  "で",
+  "と",
+  "も",
+  "から",
+  "より",
+  "まで",
+  "や",
+];
 
 const LearnPage = () => {
   const [videoUrl, setVideoUrl] = useState<string>("");
@@ -23,6 +46,7 @@ const LearnPage = () => {
   const [currentSubtitle, setCurrentSubtitle] =
     useState<ICurrentSubtitle | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   const playerRef = useRef<YoutubePlayerTypes | null>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
@@ -35,6 +59,7 @@ const LearnPage = () => {
   const handleLoadUrl = async () => {
     const videoID = extractYoutubeId(videoUrl);
     setIsLoading(true);
+    setVideoLoaded(false);
     setCurrentSubtitle(null);
     setSubtitles([]);
 
@@ -77,6 +102,7 @@ const LearnPage = () => {
 
     setSubtitles(processed);
     setIsLoading(false);
+    setVideoLoaded(true);
   };
 
   useEffect(() => {
@@ -97,6 +123,52 @@ const LearnPage = () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [subtitles]);
+
+  const buildFrequency = (subs: any[]) => {
+    const freq: Record<string, number> = {};
+    subs.forEach((s) => {
+      s.tokens?.forEach((t: Token) => {
+        const word = t.surface.trim();
+        if (!word) return;
+        freq[word] = (freq[word] || 0) + 1;
+      });
+    });
+    return freq;
+  };
+
+  const buildPOSFrequency = (subs: any[]) => {
+    const freq: Record<string, number> = {};
+    subs.forEach((s) => {
+      s.tokens?.forEach((t: Token) => {
+        const pos = t.pos.trim();
+        if (!pos) return;
+        freq[pos] = (freq[pos] || 0) + 1;
+      });
+    });
+    return freq;
+  };
+
+  const buildParticleFrequency = (subs: any[]) => {
+    const freq: Record<string, number> = {};
+    subs.forEach((s) => {
+      s.tokens?.forEach((t: Token) => {
+        const w = t.surface.trim();
+        if (particleList.includes(w)) {
+          freq[w] = (freq[w] || 0) + 1;
+        }
+      });
+    });
+    return freq;
+  };
+
+  const sortObj = (obj: Record<string, number>) =>
+    Object.entries(obj)
+      .map(([key, count]) => ({ key, count }))
+      .sort((a, b) => b.count - a.count);
+
+  const frequency = sortObj(buildFrequency(subtitles));
+  const posFrequency = sortObj(buildPOSFrequency(subtitles));
+  const particleFrequency = sortObj(buildParticleFrequency(subtitles));
 
   return (
     <div className="max-w-5xl mx-auto py-6">
@@ -128,29 +200,129 @@ const LearnPage = () => {
         className="w-full aspect-video bg-black mt-6 rounded-xl overflow-hidden"
       />
 
-      <div className="flex flex-1 h-40 bg-subtitle my-6 rounded-xl p-6 justify-center font-mplusrounded items-center border border-white/20">
-        {isLoading ? (
-          <i className="opacity-50 animate-spin font-poppins">
-            <CgSpinner size={50} />
-          </i>
-        ) : currentSubtitle ? (
-          <div
-            className="flex flex-wrap gap-2"
-            onMouseEnter={() => playerRef.current?.pauseVideo()}
-            onMouseLeave={() => playerRef.current?.playVideo()}
-          >
-            {currentSubtitle?.tokens
-              ?.filter(
-                (t: Token) => t.base.trim() !== "" && t.surface.trim() !== ""
-              )
-              .map((t: Token, i: number) => (
-                <Subtitle t={t} key={i} />
-              ))}
+      {videoLoaded && (
+        <div className="flex flex-1 h-40 bg-subtitle my-6 rounded-xl p-6 justify-center font-mplusrounded items-center border border-white/20">
+          {isLoading ? (
+            <i className="opacity-50 animate-spin font-poppins">
+              <CgSpinner size={50} />
+            </i>
+          ) : currentSubtitle ? (
+            <div
+              className="flex flex-wrap gap-2"
+              onMouseEnter={() => playerRef.current?.pauseVideo()}
+              onMouseLeave={() => playerRef.current?.playVideo()}
+            >
+              {currentSubtitle?.tokens
+                ?.filter(
+                  (t: Token) => t.base.trim() !== "" && t.surface.trim() !== ""
+                )
+                .map((t: Token, i: number) => (
+                  <Subtitle t={t} key={i} />
+                ))}
+            </div>
+          ) : (
+            <p className="opacity-50 text-4xl font-poppins">...</p>
+          )}
+        </div>
+      )}
+
+      {videoLoaded && (
+        <div className="w-full bg-secondary my-6 rounded-xl p-6 border border-white/10">
+          <h2 className="text-lg font-semibold font-comfortaa mb-4">
+            Word Frequency
+          </h2>
+          <div className="w-full h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={frequency.map((item) => ({
+                  word: item.key,
+                  count: item.count,
+                }))}
+              >
+                <XAxis dataKey="word" hide />
+                <YAxis tick={{ fill: "#737373" }} tickLine={false} />
+                <Tooltip
+                  contentStyle={{
+                    background: "#131720",
+                    border: "1px solid #2a2f3b",
+                    borderRadius: "8px",
+                    color: "#ffffff",
+                  }}
+                />
+                <Bar dataKey="count" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-        ) : (
-          <p className="opacity-50 text-4xl font-poppins">...</p>
-        )}
-      </div>
+        </div>
+      )}
+
+      {videoLoaded && (
+        <div className="w-full bg-secondary my-6 rounded-xl p-6 border border-white/10">
+          <h2 className="text-lg font-comfortaa mb-4">
+            Part of Speech Frequency
+          </h2>
+          <div className="w-full h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={posFrequency.map((item) => ({
+                  pos: item.key,
+                  count: item.count,
+                }))}
+              >
+                <XAxis
+                  dataKey="pos"
+                  tick={{ fill: "#737373" }}
+                  tickLine={false}
+                  interval={0}
+                />
+                <YAxis tick={{ fill: "#737373" }} tickLine={false} />
+                <Tooltip
+                  contentStyle={{
+                    background: "#131720",
+                    border: "1px solid #2a2f3b",
+                    borderRadius: "8px",
+                    color: "#ffffff",
+                  }}
+                />
+                <Bar dataKey="count" fill="#10b981" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {videoLoaded && (
+        <div className="w-full bg-secondary my-6 rounded-xl p-6 border border-white/10">
+          <h2 className="text-lg font-comfortaa mb-4">Particle Usage</h2>
+          <div className="w-full h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={particleFrequency.map((p) => ({
+                  particle: p.key,
+                  count: p.count,
+                }))}
+              >
+                <XAxis
+                  dataKey="particle"
+                  tick={{ fill: "#737373" }}
+                  tickLine={false}
+                  interval={0}
+                />
+                <YAxis tick={{ fill: "#737373" }} tickLine={false} />
+                <Tooltip
+                  contentStyle={{
+                    background: "#131720",
+                    border: "1px solid #2a2f3b",
+                    borderRadius: "8px",
+                    color: "#ffffff",
+                  }}
+                />
+                <Bar dataKey="count" fill="#f472b6" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-1 bg-secondary my-6 rounded-xl p-6 border border-white/10">
         <div className="flex flex-row gap-4">
@@ -161,8 +333,7 @@ const LearnPage = () => {
             <h2 className="text-lg font-semibold font-poppins">How to use</h2>
             <p className="text-sm text-text-secondary font-poppins">
               Play the video and hover over any Japanese word in the subtitles
-              below to see its English definition. The app uses the Jisho
-              dictionary to provide accurate meanings.
+              to see its English definition.
             </p>
           </div>
         </div>
@@ -178,10 +349,8 @@ const LearnPage = () => {
               IN DEVELOPMENT
             </h2>
             <p className="text-sm text-text-secondary font-poppins">
-              Any mistranslations or incorrect definitions may occur because the
-              app is still in active development. Some words or phrases might
-              not be recognized, and certain subtitles may not parse correctly.
-              Thanks for your patience as the features continue to improve.
+              Some translations or tokens may be incorrect because the app is
+              still in active development.
             </p>
           </div>
         </div>

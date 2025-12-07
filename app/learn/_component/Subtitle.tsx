@@ -16,6 +16,8 @@ const Subtitle = ({ t }: { t: Token }) => {
     副詞: "text-purple-400", // adverb
   };
 
+  console.log(t)
+
   const handleDefinitions = async (word: string) => {
     setIsOpen(true);
     setIsLoading(true);
