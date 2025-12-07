@@ -24,7 +24,7 @@ const mplusrounded = M_PLUS_Rounded_1c({
 });
 
 export const metadata: Metadata = {
-  title: "言葉Kotoba",
+  title: "読めるYomeru",
   description: "Learn japanese faster by doing and learning.",
 };
 

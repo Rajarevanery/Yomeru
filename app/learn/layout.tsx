@@ -11,7 +11,7 @@ const layout = ({ children }: { children: React.ReactNode }) => {
           </i>
           <div className="flex flex-col">
             <h1 className="text-text-primary font-semibold text-2xl font-poppins">
-              言葉<span className="text-red-500">Kotoba</span>
+              読める<span className="text-red-500">Yomeru</span>
             </h1>
             <span className="text-text-secondary font-comfortaa">
               Learn Japanese from videos

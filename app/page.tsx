@@ -6,7 +6,7 @@ export default function Home() {
       <main className="w-full max-w-4xl px-8 py-32 flex flex-col gap-24">
         <header className="flex flex-col gap-2">
           <h1 className="text-4xl sm:text-5xl font-bold font-comfortaa text-text-primary">
-            言葉<span className="text-red-500">Kotoba</span>
+            読める<span className="text-red-500">Yomeru</span>
           </h1>
           <p className="text-lg text-text-secondary max-w-xl">
             Learn Japanese by watching videos. Hover subtitles, see meanings

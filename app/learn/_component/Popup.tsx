@@ -19,6 +19,8 @@ const Popup = ({
     return pos;
   };
 
+  console.log(t)
+
   return (
     <div
       className="p-3 rounded-lg shadow-lg w-72 text-white absolute bottom-28 z-10 bg-secondary font-poppins    
@@ -34,7 +36,7 @@ const Popup = ({
       <div className="mb-2">
         <h2 className="text-xl font-bold">{t.surface}</h2>
         <span className="text-xs text-gray-400 px-1 py-0.5 rounded-md bg-gray-700">
-          {formatPOS(t.pos, t.pos_details_1)}
+          {formatPOS(t.pos, t.pos_detail_1)}
         </span>
       </div>
 

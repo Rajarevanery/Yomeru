@@ -139,9 +139,13 @@ const LearnPage = () => {
             onMouseEnter={() => playerRef.current?.pauseVideo()}
             onMouseLeave={() => playerRef.current?.playVideo()}
           >
-            {currentSubtitle?.tokens?.map((t: Token, i: number) => {
-              return <Subtitle t={t} key={i} />;
-            })}
+            {currentSubtitle?.tokens
+              ?.filter(
+                (t: Token) => t.base.trim() !== "" && t.surface.trim() !== ""
+              )
+              .map((t: Token, i: number) => (
+                <Subtitle t={t} key={i} />
+              ))}
           </div>
         ) : (
           <p className="opacity-50 text-4xl font-poppins">...</p>

@@ -1,6 +1,9 @@
 export type Token = {
   base: string;
   pos: string;
+  pos_detail_1: string;
+  pos_detail_2: string;
+  pos_detail_3: string;
   reading_hira: string;
   reading_kata: string;
   romaji: string;

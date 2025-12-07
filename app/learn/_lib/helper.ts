@@ -57,8 +57,8 @@ export async function tokenizeDetailed(japanese_text: string) {
     reading_hira: t.reading ? toHiragana(t.reading) : "",
     romaji: t.reading ? toRomaji(t.reading) : "",
     pos: t.pos,
-    pos_details_1: t.pos_detail_1,
-    pos_details_2: t.pos_detail_2,
-    pos_details_3: t.pos_detail_3,
+    pos_detail_1: t.pos_detail_1,
+    pos_detail_2: t.pos_detail_2,
+    pos_detail_3: t.pos_detail_3,
   }));
 }
