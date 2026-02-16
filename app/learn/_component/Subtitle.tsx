@@ -2,11 +2,27 @@
 import { useState } from "react";
 import { Token } from "../_lib/type";
 import Popup from "./Popup";
+import { motion } from "framer-motion";
 
-const Subtitle = ({ t }: { t: Token }) => {
+const Subtitle = ({ t, index }: { t: Token; index: number }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [translation, setTranslation] = useState();
+
+  const tokenVariants = {
+    hidden: {
+      opacity: 0,
+      y: 6,
+    },
+    show: {
+      opacity: 1,
+      y: 0,
+    },
+    exit: {
+      opacity: 0,
+      y: -6,
+    },
+  };
 
   const posColors: Record<string, string> = {
     名詞: "text-emerald-400", // noun
@@ -16,7 +32,7 @@ const Subtitle = ({ t }: { t: Token }) => {
     副詞: "text-purple-400", // adverb
   };
 
-  console.log(t)
+  console.log(t);
 
   const handleDefinitions = async (word: string) => {
     setIsOpen(true);
@@ -37,13 +53,18 @@ const Subtitle = ({ t }: { t: Token }) => {
   const color = posColors[t.pos] || "text-neutral-300";
 
   return (
-    <div onMouseLeave={() => setIsOpen(false)} className="flex flex-col gap-1 items-start justify-end">
-      {isOpen && <Popup t={t} translation={translation} isLoading={isLoading} />}
+    <motion.div
+      key={index}
+      variants={tokenVariants}
+      onMouseLeave={() => setIsOpen(false)}
+      className="flex flex-col gap-1 items-start justify-end relative"
+    >
+      {isOpen && (
+        <Popup t={t} translation={translation} isLoading={isLoading} />
+      )}
 
-      {t.reading_hira !== t.surface ? (
-        <span className="text-sm opacity-50">{t.reading_hira}</span>
-      ) : (
-        <span className="text-sm opacity-0"></span>
+      {t.reading_hira !== t.surface && (
+        <span className="text-sm opacity-50 absolute bottom-10 w-96">{t.reading_hira}</span>
       )}
 
       <span
@@ -54,7 +75,7 @@ const Subtitle = ({ t }: { t: Token }) => {
       </span>
 
       {/* <span className="text-xs opacity-60">{t.pos}</span> */}
-    </div>
+    </motion.div>
   );
 };
 

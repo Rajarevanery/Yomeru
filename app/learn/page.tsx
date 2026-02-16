@@ -24,6 +24,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { AnimatePresence, motion } from "framer-motion";
 
 const particleList = [
   "は",
@@ -206,22 +207,47 @@ const LearnPage = () => {
             <i className="opacity-50 animate-spin font-poppins">
               <CgSpinner size={50} />
             </i>
-          ) : currentSubtitle ? (
-            <div
-              className="flex flex-wrap gap-2"
-              onMouseEnter={() => playerRef.current?.pauseVideo()}
-              onMouseLeave={() => playerRef.current?.playVideo()}
-            >
-              {currentSubtitle?.tokens
-                ?.filter(
-                  (t: Token) => t.base.trim() !== "" && t.surface.trim() !== ""
-                )
-                .map((t: Token, i: number) => (
-                  <Subtitle t={t} key={i} />
-                ))}
-            </div>
-          ) : (
-            <p className="opacity-50 text-4xl font-poppins">...</p>
+          ) : currentSubtitle && (
+            <AnimatePresence mode="popLayout">
+              <motion.div
+                layout
+                key={currentSubtitle.text}
+                className="flex flex-wrap gap-2"
+                onMouseEnter={() => playerRef.current?.pauseVideo()}
+                onMouseLeave={() => playerRef.current?.playVideo()}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+                variants={{
+                  hidden: {},
+                  show: {
+                    transition: {
+                      staggerChildren: 0.06,
+                      staggerDirection: 1,
+                    },
+                  },
+                  exit: {
+                    transition: {
+                      staggerChildren: 0.06,
+                      staggerDirection: 1,
+                    },
+                  },
+                }}
+              >
+                {currentSubtitle?.tokens
+                  ?.filter(
+                    (t: Token) =>
+                      t.base.trim() !== "" && t.surface.trim() !== ""
+                  )
+                  .map((t: Token, i: number) => (
+                    <Subtitle
+                      t={t}
+                      key={i}
+                      index={i}
+                    />
+                  ))}
+              </motion.div>
+            </AnimatePresence>
           )}
         </div>
       )}
